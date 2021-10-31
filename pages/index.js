@@ -30,11 +30,10 @@ export default function Home() {
       data.map(async (i) => {
         const tokenUri = await tokenContract.tokenURI(i.tokenId);
         const meta = await axios.get(tokenUri);
-        console.log(meta);
         let price = ethers.utils.formatUnits(i.price.toString(), 'ether');
         let item = {
           price,
-          tokenId: i.tokenId.toNumber(),
+          itemId: i.itemId.toNumber(),
           seller: i.seller,
           owner: i.owner,
           image: meta.data.image,
@@ -60,9 +59,10 @@ export default function Home() {
 
     const transaction = await contract.createMarketSale(
       nftaddress,
-      nft.tokenId,
+      nft.itemId,
       { value: price }
     );
+    console.log('contract');
     await transaction.wait();
 
     loadNFTs();
@@ -73,14 +73,14 @@ export default function Home() {
 
   return (
     <div className='flex justify-center'>
-      <div className='px-4' style={{ maxWidth: '1600px' }}>
+      <div className='px-4'>
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 pag-4 pt-4'>
           {nfts.map((nft, i) => (
             <div key={i} className='border shadow rounded-xl overflow-hidden'>
               <img
                 src={nft.image}
                 alt=' '
-                style={{ minHeight: 100, margin: 'auto' }}
+                style={{ height: 100, margin: 'auto', maxWidth: '100%' }}
               />
               <div className='p-4'>
                 <p className='text-2xl font-semibold' style={{ height: 64 }}>
