@@ -8,7 +8,7 @@ import { nftaddress, nftmarketaddress } from '../config';
 import NFT from '../artifacts/contracts/NFT.sol/NFT.json';
 import Market from '../artifacts/contracts/NFTMarket.sol/NFTMarket.json';
 
-export default function Home() {
+export default function MyAssets() {
   const [nfts, setNfts] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -17,14 +17,18 @@ export default function Home() {
   }, []);
 
   async function loadNFTs() {
-    const provider = new ethers.providers.JsonRpcProvider();
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
+    const web3modal = new Web3Modal();
+    const connection = await web3modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
     const marketContract = new ethers.Contract(
       nftmarketaddress,
       Market.abi,
-      provider
+      signer
     );
-    const data = await marketContract.fetchMarketItems();
+    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
+    const data = await marketContract.fetchMyNFTs();
 
     const items = await Promise.all(
       data.map(async (i) => {
@@ -48,28 +52,8 @@ export default function Home() {
     setLoaded(true);
   }
 
-  async function buyNFT(nft) {
-    const web3modal = new Web3Modal();
-    const connection = await web3modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-
-    const price = ethers.utils.parseUnits(nft.price.toString(), 'ether');
-
-    const transaction = await contract.createMarketSale(
-      nftaddress,
-      nft.tokenId,
-      { value: price }
-    );
-    await transaction.wait();
-
-    loadNFTs();
-  }
-
   if (loaded && !nfts.length)
-    return <h1 className='px-20 py-10 text-3xl'>No items in marketplace</h1>;
+    return <h1 className='px-20 py-10 text-3xl'>No assets owned</h1>;
 
   return (
     <div className='flex justify-center'>
