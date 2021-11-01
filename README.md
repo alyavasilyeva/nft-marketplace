@@ -17,4 +17,4 @@ npx hardhat help
 # To test the project run
 
 `npx hardhat run scripts/deploy.js --network localhost`
-Put generated addresses in `config.js`
+Put generated addresses into `config.js`
